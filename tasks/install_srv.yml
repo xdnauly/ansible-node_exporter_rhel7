@@ -1,0 +1,50 @@
+- name: Upload file
+  ansible.builtin.copy:
+    src: files/node_exporter-{{ version }}.linux-{{ arch }}.tar.gz
+    dest: /tmp
+    remote_src: false
+
+- name: Extract archive
+  ansible.builtin.unarchive:
+    creates: "{{ installation_directory }}/node_exporter-{{ version }}.linux-{{ arch }}"
+    src: /tmp/node_exporter-{{ version }}.linux-{{ arch }}.tar.gz
+    dest: "{{ installation_directory }}"
+    remote_src: true
+
+- name: Remove file node_exporter-{{ version }}.linux-{{ arch }}.tar.gz
+  ansible.builtin.file:
+    path: /tmp/node_exporter-{{ version }}.linux-{{ arch }}.tar.gz
+    state: absent
+
+- name: Add group "node_exporter"
+  ansible.builtin.group:
+    name: node_exporter
+
+- name: Add user "node_exporter"
+  user:
+    name: node_exporter
+    group: node_exporter
+    createhome: false
+
+- name: Change ownership of "node_exporter"
+  ansible.builtin.file:
+    path: "{{ installation_directory }}/node_exporter-{{ version }}.linux-{{ arch }}"
+    owner: node_exporter
+    group: node_exporter
+    state: directory
+    recurse: true
+
+- name: Copy config
+  ansible.builtin.template:
+    src: node_exporter.service
+    dest: /etc/systemd/system
+
+- name: Systemctl daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart node_exporter
+  ansible.builtin.service:
+    name: node_exporter
+    state: restarted
+    enabled: true

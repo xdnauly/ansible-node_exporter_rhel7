@@ -1,0 +1,13 @@
+- name: Add port 9100 tcp
+  ansible.builtin.command:
+    argv:
+      - firewall-cmd
+      - --add-port=9100/tcp
+      - --permanent
+      - --zone=public
+
+- name: Reload firewalld
+  ansible.builtin.command:
+    argv:
+      - firewall-cmd
+      - --reload

@@ -1,0 +1,11 @@
+[Unit]
+Description=Node exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+ExecStart={{ installation_directory }}/node_exporter-{{ version }}.linux-{{ arch }}/node_exporter
+
+[Install]
+WantedBy=default.target
